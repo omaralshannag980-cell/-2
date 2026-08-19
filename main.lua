@@ -1,10 +1,12 @@
+-- سكربت الخادم (المشغل)
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local Chat = game:GetService("Chat")
 
 local FakeLeave = ReplicatedStorage:FindFirstChild("FakeLeaveEvent")
+if not FakeLeave then return end
 
--- دالة البحث عن اللاعب بأول 3 أحرف
+-- دالة البحث عن اللاعب بأول 3 أحرف (أو أكثر)
 local function GetPlayerByPartial(partial)
     partial = partial:lower()
     local matches = {}
@@ -16,7 +18,7 @@ local function GetPlayerByPartial(partial)
     return matches
 end
 
--- ===== الدالة الأساسية (تغيير قراءة اللعبة) =====
+-- ===== الدالة الأساسية =====
 local function FakeLeavePlayer(partialName)
     local matches = GetPlayerByPartial(partialName)
     
@@ -26,23 +28,25 @@ local function FakeLeavePlayer(partialName)
     end
     
     if #matches > 1 then
-        print("⚠️ فيه أكثر من لاعب: " .. table.concat(matches, ", "))
+        print("⚠️ فيه أكثر من لاعب يطابق:")
+        for i, p in ipairs(matches) do
+            print(i .. ". " .. p.Name)
+        end
         return
     end
     
     local target = matches[1]
     
-    -- 1. نرسل رسالة في الشات العام (زي خروج حقيقي)
-    local fakeMessage = target.Name .. " left the game."
-    Chat:Chat(workspace, fakeMessage) -- تظهر لجميع اللاعبين
+    -- 1. رسالة شات مزيفة (تظهر للكل)
+    Chat:Chat(workspace, target.Name .. " left the game.")
     
-    -- 2. نرسل حدث لكل اللاعبين عشان يعدلون واجهاتهم (يخفون اسمه)
+    -- 2. نرسل حدث لكل اللاعبين عشان يعدلون الـ GUI الخاص بنا
     FakeLeave:FireAllClients(target.Name)
     
-    print("✅ تم إيهام الجميع بأن " .. target.Name .. " طلع من الشات والقوائم، وهو باقي!")
+    print("✅ تم إيهام الكل بأن " .. target.Name .. " طلع من القائمة والشات!")
 end
 
--- ===== طريقة التشغيل (اكتبها في Console) =====
--- مثال: اكتب أول 3 حروف
+-- ===== طريقة التشغيل (اكتبها في Console الخادم) =====
+-- مثال: اكتب أول 3 حروف من اسم اللاعب
 FakeLeavePlayer("أحم")
 -- FakeLeavePlayer("سا")
